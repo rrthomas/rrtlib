@@ -5,6 +5,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <limits.h>
 
 /* Hash tables are constructed from chains of HashNodes, which contain
    a link to the next node, and pointers to the key and data
@@ -28,5 +29,7 @@ void hash_free(HashTable *table);
 HashNode *hash_find(HashTable *table, void *key);
 void *hash_get(HashTable *table, void *key);
 void hash_set(HashTable *table, void *key, void *body);
+
+#define HASH_MAX_SIZE (sizeof(size_t) * CHAR_BIT - 1)
 
 #endif

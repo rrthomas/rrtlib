@@ -14,6 +14,8 @@ hash_new(size_t size)
 {
   HashTable *t = new(HashTable);
 
+  if (size > HASH_MAX_SIZE)
+    throw("hash too big");
   t->size = (1 << size) - 1;
   t->chain = exc_calloc(t->size, sizeof(HashNode));
 
