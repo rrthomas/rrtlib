@@ -1,13 +1,19 @@
+/* Exceptions */
+
 #ifndef EXCEPT_H
 #define EXCEPT_H
 
 #include <stdlib.h>
 #include <stdarg.h>
 #include <setjmp.h>
+#include "list.h"
 
 void exc_init(void);
 void vthrow(const char *fmt, va_list arg);
 void throw(const char *fmt, ...);
+
+jmp_buf *_try(void);
+extern List *_excBufs;
 
 /* An exception handler has the form:
 
@@ -15,9 +21,6 @@ void throw(const char *fmt, ...);
    catch <statement>; (this is the exception handler)
    endtry;
 */
-
-jmp_buf *_try(void);
-extern List *_excBufs;
 
 /* Set up a new exception handler for the next statement */
 #define try if (setjmp(*_try()) == 0)

@@ -7,6 +7,7 @@
 #include <setjmp.h>
 
 #include "except.h"
+#include "memory.h"
 #include "list.h"
 
 /* Make a variadic wrapper for an exception routine */
