@@ -1,4 +1,4 @@
-/* Auto-extending buffer */
+/* Auto-extending buffers */
 
 #ifndef BUFFER_H
 #define BUFFER_H

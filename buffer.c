@@ -1,4 +1,4 @@
-/* Auto-extending buffer */
+/* Auto-extending buffers */
 
 #include <string.h>
 
