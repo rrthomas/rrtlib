@@ -80,9 +80,8 @@ hash_set(HashTable *table, void *key, void *data)
 }
 
 
-/* Hasher and HashComparer functions for string keys */
-
-/* Adapted from the Red Dragon book */
+/* Hasher function for string keys (adapted from the Red Dragon
+   book) */
 size_t
 hash_strhash(void *str)
 {
@@ -100,6 +99,7 @@ hash_strhash(void *str)
   return h;
 }
 
+/* HashComparer functions for string keys */
 bool hash_strcmp(void *s, void *t)
 {
   return strcmp((char *)s, (char *)t) == 0;
