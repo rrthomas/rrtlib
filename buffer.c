@@ -1,6 +1,8 @@
 /* Auto-extending buffer */
 
+#include "memory.h"
 #include "buffer.h"
+
 
 /* Create a buffer with initial size size */
 Buffer *
