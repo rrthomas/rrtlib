@@ -61,6 +61,6 @@ void
 buf_addblk(Buffer *b, size_t n, const uint8_t *d)
 {
   b = buf_realloc(b, b->used + n);
-  b->used += n;
   memcpy((char *)b->data + b->used, d, n);
+  b->used += n;
 }
