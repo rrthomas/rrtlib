@@ -7,30 +7,36 @@
 #include "except.h"
 #include "hash.h"
 
+
 char *progname = "hash_test";
 
 int main(void)
 {
-  HashTable *t = hash_new(2);
+  HashTable *t = hash_new(1);
+  char *s0 = "a";
+  char *s1 = "abc";
+  char *s2 = "def";
+  char *s3 = "ghi";
+  char *s4 = "xyz";
 
   /* Set a hash item and check it can be read back */
-  hash_set(t, "a", "foo");
-  assert(strcmp(hash_get(t, "a"), "foo") == 0);
+  hash_set(t, s0, "foo");
+  assert(strcmp(hash_get(t, s0), "foo") == 0);
 
   /* Set the item to something else and check it no longer exists */
-  hash_set(t, "a", NULL);
-  assert(hash_get(t, "a") == NULL);
+  hash_set(t, s0, NULL);
+  assert(hash_get(t, s0) == NULL);
 
   /* Add lots of strings to the hash table, forcing at least one chain */
-  hash_set(t, "abc", "foo");
-  hash_set(t, "xyz", "bar");
-  hash_set(t, "def", "baz");
+  hash_set(t, s1, "foo");
+  hash_set(t, s4, "bar");
+  hash_set(t, s2, "baz");
 
-  /* Delete the strings, and one or two that aren't in the table */
-  hash_set(t, "ghi", NULL);
-  hash_set(t, "abc", NULL);
-  hash_set(t, "xyz", NULL);
-  hash_set(t, "def", NULL);
+  /* Delete the strings, and one that isn't in the table */
+  hash_set(t, s3, NULL);
+  hash_set(t, s1, NULL);
+  hash_set(t, s4, NULL);
+  hash_set(t, s2, NULL);
 
   /* Free the hash table */
   hash_free(t);
