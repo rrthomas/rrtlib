@@ -9,14 +9,19 @@
 typedef struct {
   size_t size;                  /* number of bytes reserved in data */
   size_t used;                  /* number of bytes used in data */
-  void *data;
+  uint8_t *data;
 } Buffer;
 
 Buffer *buf_new(size_t size);
 void buf_free(Buffer *b);
+uint8_t *buf_toarray(Buffer *b);
 Buffer *buf_realloc(Buffer *b, size_t size);
 Buffer *buf_grow(Buffer *b, size_t size);
-void buf_addblk(Buffer *b, size_t n, const void *d);
+void buf_addblk(Buffer *b, size_t n, const uint8_t *d);
+
+#define buf_size(b) (b)->size
+#define buf_used(b) (b)->used
+#define buf_data(b) (b)->data
 
 /* Align buffer b's b->used to the nearest 2^n bytes */
 #define buf_align(b, n) \

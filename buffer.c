@@ -1,5 +1,6 @@
 /* Auto-extending buffers */
 
+#include <stdint.h>
 #include <string.h>
 
 #include "memory.h"
@@ -25,6 +26,16 @@ buf_free(Buffer *b)
   free(b);
 }
 
+/* Convert a buffer to a byte array */
+uint8_t *
+buf_toarray(Buffer *b) {
+  uint8_t *d;
+  buf_realloc(b, 0);
+  d = b->data;
+  free(b);
+  return d;
+}
+
 /* Resize a buffer b to max(size, b->used) */
 Buffer *
 buf_realloc(Buffer *b, size_t size)
@@ -45,9 +56,9 @@ buf_grow(Buffer *b, size_t size)
   return b;
 }
 
-/* Add a block of data d of size n to a buffer b */
+/* Add an n-byte block of data d of to a buffer b */
 void
-buf_addblk(Buffer *b, size_t n, const void *d)
+buf_addblk(Buffer *b, size_t n, const uint8_t *d)
 {
   b = buf_realloc(b, b->used + n);
   b->used += n;
