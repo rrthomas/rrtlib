@@ -1,5 +1,4 @@
-# Makefile for RRTLib C library
-# (c) Reuben Thomas 1996-2003
+# Makefile for RRTLib
 
 # TODO: Use a more sensible build system that deals with dependencies
 # properly; provide a trivial build script for people who don't have it.
