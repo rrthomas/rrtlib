@@ -18,7 +18,7 @@ libs = except memory string stream list hash buffer
 srcs = $(addsuffix .c, $(libs))
 objs = $(addsuffix .o, $(libs))
 docs = $(addsuffix .html, $(libs))
-tests = $(addsuffix _test, $(libs))
+tests = list_test hash_test buffer_test # $(addsuffix _test, $(libs))
 
 
 # How to make the libraries
@@ -32,8 +32,10 @@ $(lib): $(objs)
 
 $(tests): $(lib)
 
-test: hash_test
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):. hash_test
+test: $(tests)
+	@for i in $^; do \
+		LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):. $$i; \
+	done
 
 install: libRRT.so
 	install -s libRRT.so $(LIBDIR)
