@@ -38,7 +38,7 @@ test: $(tests)
 		LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):. $$i; \
 	done
 
-install: $(lib)
+install: test $(lib)
 	install -s $(lib) $(LIBDIR)
 	install -m 644 *.h $(INCDIR)
 
