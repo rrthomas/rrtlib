@@ -14,12 +14,12 @@ LDFLAGS = -L. -lRRT -fPIC
 
 lib = libRRT.so
 zip = rrtlib.zip
-libs = except memory string stream list hash buffer
+libs = except memory string stream list hash buffer vector
 srcs = $(addsuffix .c, $(libs))
 hdrs = $(addsuffix .h, $(libs))
 objs = $(addsuffix .o, $(libs))
 docs = $(addsuffix .html, $(libs))
-tests = list_test hash_test buffer_test # $(addsuffix _test, $(libs))
+tests = list_test hash_test buffer_test vector_test # $(addsuffix _test, $(libs))
 
 
 # How to make the libraries
@@ -35,7 +35,7 @@ $(tests): $(lib)
 
 test: $(tests)
 	@for i in $^; do \
-		LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):. $$i; \
+		LD_LIBRARY_PATH=.:$(LD_LIBRARY_PATH) $$i; \
 	done
 
 install: test $(lib)
