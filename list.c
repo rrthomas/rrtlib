@@ -6,30 +6,30 @@
 #include "memory.h"
 #include "list.h"
 
+
 /* Create an empty list, returning a pointer to the list */
 List *
 list_new(void)
 {
-    List *l = new(List);
+  List *l = new(List);
 
-    l->next = l->prev = l;
-    l->item = NULL;
+  l->next = l->prev = l;
+  l->item = NULL;
 
-    return l;
+  return l;
 }
 
-/* Destroy a list */
+/* Free a list */
 void
 list_free(List *l)
 {
-    List *p, *q = l->next;
+  List *p = l, *q;
 
-    for (p = l->next; q != l; p = q) {
-        q = p->next;
-        free(p->item);
-        free(p);
-    }
-    free(l);
+  do {
+    q = p;
+    p = p->next;
+    free(q);
+  } while (p != l);
 }
 
 /* Test whether a list is empty */
@@ -43,75 +43,75 @@ list_empty(List *l)
 unsigned long
 list_length(List *l)
 {
-    List *lp;
-    unsigned long length = 0;
+  List *p;
+  unsigned long length = 0;
 
-    for (lp = l->next; lp != l; lp = lp->next)
-      ++length;
+  for (p = l->next; p != l; p = p->next)
+    ++length;
 
-    return length;
+  return length;
 }
 
 /* Add an item to the head of a list, returning the new list head */
 List *
 list_prefix(List *l, void *i)
 {
-    List *n = new(List);
+  List *n = new(List);
 
-    n->next = l->next;
-    n->prev = l;
-    n->item = i;
-    l->next = l->next->prev = n;
+  n->next = l->next;
+  n->prev = l;
+  n->item = i;
+  l->next = l->next->prev = n;
 
-    return n;
+  return n;
 }
 
 /* Add an item to the tail of a list, returning the new list tail */
 List *
 list_suffix(List *l, void *i)
 {
-    List *n = new(List);
+  List *n = new(List);
 
-    n->next = l;
-    n->prev = l->prev;
-    n->item = i;
-    l->prev = l->prev->next = n;
+  n->next = l;
+  n->prev = l->prev;
+  n->item = i;
+  l->prev = l->prev->next = n;
 
-    return n;
+  return n;
 }
 
 /* Remove the first item of a list, returning the item, or NULL if the
-   list is empty. */
+   list is empty */
 void *
 list_behead(List *l)
 {
-    void *i;
-    List *d = l->next;
+  void *i;
+  List *d = l->next;
 
-    if (d == l)
-      return NULL;
-    i = d->item;
-    l->next = l->next->next;
-    l->next->prev = l;
-    free(d);
+  if (d == l)
+    return NULL;
+  i = d->item;
+  l->next = l->next->next;
+  l->next->prev = l;
+  free(d);
 
-    return i;
+  return i;
 }
 
 /* Remove the last item of a list, returning the item, or NULL if the
-   list is empty. */
+   list is empty */
 void *
 list_betail(List *l)
 {
-    void *i;
-    List *d = l->prev;
+  void *i;
+  List *d = l->prev;
 
-    if (d == l)
-      return NULL;
-    i = d->item;
-    l->prev = l->prev->prev;
-    l->prev->next = l;
-    free(d);
+  if (d == l)
+    return NULL;
+  i = d->item;
+  l->prev = l->prev->prev;
+  l->prev->next = l;
+  free(d);
 
-    return i;
+  return i;
 }
