@@ -1,7 +1,9 @@
-/* Circular doubly-linked list/queue */
+/* Circular doubly-linked lists/queues */
 
 #include <stdlib.h>
+
 #include "except.h"
+#include "memory.h"
 #include "list.h"
 
 /* Create an empty list, returning a pointer to the list */
@@ -18,7 +20,7 @@ list_new(void)
 
 /* Destroy a list */
 void
-list_destroy(List *l)
+list_free(List *l)
 {
     List *p, *q = l->next;
 
