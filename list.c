@@ -81,7 +81,7 @@ list_suffix(List *l, const void *i)
 }
 
 /* Return the first item of a list, or NULL if the list is empty */
-void *
+const void *
 list_head(List *l)
 {
   List *d = l->next;
@@ -94,10 +94,10 @@ list_head(List *l)
 
 /* Remove the first item of a list, returning the item, or NULL if the
    list is empty */
-void *
+const void *
 list_behead(List *l)
 {
-  void *i;
+  const void *i;
   List *d = l->next;
 
   if (d == l)
@@ -112,10 +112,10 @@ list_behead(List *l)
 
 /* Remove the last item of a list, returning the item, or NULL if the
    list is empty */
-void *
+const void *
 list_betail(List *l)
 {
-  void *i;
+  const void *i;
   List *d = l->prev;
 
   if (d == l)

@@ -16,8 +16,8 @@ int list_empty(List *l);
 unsigned long list_length(List *l);
 List *list_prefix(List *l, const void *i);
 List *list_suffix(List *l, const void *i);
-void *list_head(List *l);
-void *list_behead(List *l);
-void *list_betail(List *l);
+const void *list_head(List *l);
+const void *list_behead(List *l);
+const void *list_betail(List *l);
 
 #endif
