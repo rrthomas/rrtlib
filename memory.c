@@ -1,41 +1,35 @@
 #include <stdio.h>
 
 #include "except.h"
-#include "list.h"
 #include "memory.h"
 
-Chunk *
-chunkNew(size_t size)
+/* Call malloc and throw an exception if it fails */
+void *
+exc_malloc(size_t size)
 {
-    Chunk *ch= new(Chunk);
+  void *p = malloc(size);
 
-    ch->size= size;
-    if (size)
-        ch->block= excCalloc(size, sizeof(Byte));
-
-    return ch;
+  if (!p && size)
+    throw("could not allocate memory in malloc");
+  return p;
 }
 
-void
-chunkDestroy(Chunk *ch)
+/* Call calloc and throw an exception if it fails */
+void *
+exc_calloc(size_t nobj, size_t size)
 {
-    if (ch->size) free(ch->block);
-    free(ch);
+  void *p = calloc(nobj, size);
+
+  if (!p && nobj && size)
+    throw("could not allocate memory in calloc");
+  return p;
 }
 
-void
-chunkAdd(List *l, unsigned long w, unsigned n)
+/* Call realloc and throw an exception if it fails */
+void *
+exc_realloc(void *p, size_t size)
 {
-    size_t i;
-    Chunk *ch;
-
-    if (n > 4) throw("word to add to list too large");
-
-    ch= chunkNew(n);
-    for (i= 0; i < n; i++) {
-        (ch->block)[i]= w & 0xff;
-        w >>= 8;
-    }
-
-    listSuffix(l, ch);
+  if (!(p = realloc(p, size)) && size)
+    throw("could not reallocate memory");
+  return p;
 }

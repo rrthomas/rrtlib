@@ -1,3 +1,5 @@
+/* Exceptions */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -7,93 +9,85 @@
 #include "except.h"
 #include "list.h"
 
-#define unVify(vf, f) \
-    void\
-    f (const char *fmt, ...) \
-    { \
-        va_list ap; \
-        va_start(ap, fmt); \
-        vf(fmt, ap); \
-        va_end(ap); \
-    }
+/* Make a variadic wrapper for an exception routine */
+#define unvify(vf, f) \
+  void\
+  f (const char *fmt, ...) \
+  { \
+    va_list ap; \
+    va_start(ap, fmt); \
+    vf(fmt, ap); \
+    va_end(ap); \
+  }
 
-static List *_excBufs;
-unsigned long excPos= 0;
-char *excFile= NULL;
+/* The stack of exception jmp_bufs */
+List *_exc_bufs;
 
+/* Position in file for error messages; typically a line number */
+unsigned long exc_pos = 0;
+
+/* The name of the file being processed */
+char *exc_file = NULL;
+
+/* Initialise exceptions; exc_init() must be called before any other
+   exception function */
 void
-excInit(void)
+exc_init(void)
 {
-    _excBufs= listNew();
+  _exc_bufs = list_new();
 }
 
+/* Raise an exception. If _exc_bufs is non-empty then longjmp() to the
+   next handler; otherwise exit the program via vdie(). */
 void
-vWarn(const char *fmt, va_list arg)
+vthrow(const char *fmt, va_list arg)
 {
-    if (progName) fprintf(stderr, "%s:", progName);
-    if (excFile) fprintf(stderr, "%s:", excFile);
-    if (excPos) fprintf(stderr, "%lu:", excPos);
-    if (progName || excFile || excPos) putc(' ', stderr);
-    vfprintf(stderr, fmt, arg);
-    va_end(arg);
-    putc('\n', stderr);
+  if (!list_empty(_exc_bufs))
+    longjmp(*((jmp_buf *)_exc_bufs->next->item), true);
+  vdie(fmt, arg);
 }
-unVify(vWarn, warn)
+unvify(vthrow, throw)
 
-void
-vDie(const char *fmt, va_list arg)
-{
-    vWarn(fmt, arg);
-    exit(EXIT_FAILURE);
-}
-unVify(vDie, die)
-
-void
-vThrow(const char *fmt, va_list arg)
-{
-    if (!listEmpty(_excBufs))
-        longjmp(*((jmp_buf *)_excBufs->next->item), true);
-    vDie(fmt, arg);
-}
-unVify(vThrow, throw)
-
+/* Set up a new exception handler. Called by the try macro. */
 jmp_buf *
-_excEnv(void)
+_try(void)
 {
-    jmp_buf *env= new(jmp_buf);
+  jmp_buf *env = new(jmp_buf);
 
-    listPrefix(_excBufs, env);
-    return env;
+  list_prefix(_exc_bufs, env);
+
+  return env;
 }
 
+/* Write a warning to stderr of the form:
+
+   progname:exc_file:exc_pos other arguments\n
+
+   progname and exc_file are not displayed if they are NULL, and
+   exc_pos isn't displayed if it is 0. */
 void
-_endTry(void)
+vwarn(const char *fmt, va_list arg)
 {
-    if (!listEmpty(_excBufs)) listBehead(_excBufs);
+  if (progname)
+    fprintf(stderr, "%s:", progname);
+  if (exc_file)
+    fprintf(stderr, "%s:", exc_file);
+  if (exc_pos)
+    fprintf(stderr, "%lu:", exc_pos);
+  if (progname || exc_file || exc_pos)
+    putc(' ', stderr);
+  vfprintf(stderr, fmt, arg);
+  va_end(arg);
+  putc('\n', stderr);
 }
+unvify(vwarn, warn)
 
-void *
-excMalloc(size_t size)
+/* Like vwarn, but calls exit() after the warning message has been
+   written. */
+void
+vdie(const char *fmt, va_list arg)
 {
-    void *p= malloc(size);
-
-    if (!p && size) throw("could not allocate memory");
-    return p;
+  vwarn(fmt, arg);
+  exit(EXIT_FAILURE);
 }
-
-void *
-excCalloc(size_t nobj, size_t size)
-{
-    void *p= calloc(nobj, size);
-
-    if (!p && nobj && size) throw("could not allocate memory");
-    return p;
-}
-
-void *
-excRealloc(void *p, size_t size)
-{
-    if (!(p= realloc(p, size)) && size)
-        throw("could not reallocate memory");
-    return p;
-}
+unvify(vdie, die)
