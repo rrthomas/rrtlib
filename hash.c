@@ -8,106 +8,77 @@
 #include "hash.h"
 
 
-/* Create a hash table of size size with a hashing function hash and
-   comparison function compare; a pointer to the table is returned */
+/* Create a hash table of size 1<<size */
 HashTable *
-hash_new(size_t size, Hasher hash, HashComparer compare)
+hash_new(size_t size)
 {
-  HashTable *table = new(HashTable);
+  HashTable *t = new(HashTable);
 
-  table->chain = exc_calloc(size, sizeof(HashNode));
-  table->size = size;
-  table->hash = hash;
-  table->compare = compare;
+  t->size = (1 << size) - 1;
+  t->chain = exc_calloc(t->size, sizeof(HashNode));
 
-  return table;
+  return t;
 }
 
 /* Free a hash table */
 void
-hash_free (HashTable *table)
+hash_free (HashTable *t)
 {
-  HashNode *c, *p, *q, *end = table->chain + table->size;
+  HashNode *c, *p, *q, *end = t->chain + t->size;
 
-  for (c = table->chain; c < end; c++)
+  for (c = t->chain; c < end; c++)
     for (p = c->next; p != NULL; p = q) {
       q = p->next;
       free(p);
     }
-  free(table->chain);
-  free(table);
+  free(t->chain);
+  free(t);
 }
 
 /* Search a hash table for an object with key key, returning a pointer
    to the previous HashNode. If there is no such key, the next field
    of the HashNode returned will be NULL. */
 HashNode *
-hash_find(HashTable *table, void *key)
+hash_find(HashTable *t, void *key)
 {
-  HashNode *prev, *curr;
+  HashNode *p, *curr;
 
-  for (prev = table->chain + (table->hash(key) % table->size),
-         curr = prev->next;    /* first link in chain has no data */
-       curr != NULL && !table->compare(key, curr->key);
-       prev = curr, curr = curr->next);
+  for (p = t->chain + ((size_t)key % t->size),
+         curr = p->next;        /* first link in chain has no data */
+       curr != NULL && key != curr->key;
+       p = curr, curr = curr->next);
 
-  return prev;
+  return p;
 }
 
 /* Return the object associated with the given key, or NULL if none */
 void *
 hash_get(HashTable *table, void *key)
 {
-  HashNode *prev = hash_find(table, key);
+  HashNode *p = hash_find(table, key);
 
-  return prev->next ? prev->next->data : NULL;
+  return p->next ? p->next->data : NULL;
 }
 
 /* Set key key in a hash table to object data. Return the previous
    data for that key. */
 void
-hash_set(HashTable *table, void *key, void *data)
+hash_set(HashTable *t, void *key, void *data)
 {
-  HashNode *prev = hash_find(table, key);
-  HashNode *node = prev->next;
+  HashNode *p = hash_find(t, key);
+  HashNode *n = p->next;
 
-  if (node != NULL) {
+  if (n != NULL) {
     if (data != NULL)
-      node->data = data;
+      n->data = data;
     else {
-      prev->next = node->next;
-      free(node);
+      p->next = n->next;
+      free(n);
     }
   } else if (data) {
-    node = new(HashNode);
-    prev->next = node;
-    node->key = key;
-    node->data = data;
+    n = new(HashNode);
+    p->next = n;
+    n->key = key;
+    n->data = data;
   }
-}
-
-
-/* Hasher function for string keys (adapted from the Red Dragon
-   book) */
-size_t
-hash_strhash(void *str)
-{
-  char *p, *s = (char *)str;
-  unsigned long h = 0, g;
-
-  for (p = s; *p != '\0' && (p - s) < 32; p++) {
-    h = (h << 4) + *p;
-    if ((g = h & 0xf0000000)) {
-      h ^= (g >> 24);
-      h ^= g;
-    }
-  }
-
-  return h;
-}
-
-/* HashComparer functions for string keys */
-bool hash_strcmp(void *s, void *t)
-{
-  return strcmp((char *)s, (char *)t) == 0;
 }

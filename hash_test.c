@@ -11,7 +11,7 @@ char *progname = "hash_test";
 
 int main(void)
 {
-  HashTable *t = hash_new(2, hash_strhash, hash_strcmp);
+  HashTable *t = hash_new(2);
 
   /* Set a hash item and check it can be read back */
   hash_set(t, "a", "foo");
