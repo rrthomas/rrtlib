@@ -1,5 +1,8 @@
 /* Auto-extending buffers */
 
+#ifndef BUFFER_H
+#define BUFFER_H
+
 typedef struct {
   size_t size;
   size_t used;
@@ -12,3 +15,5 @@ Buffer *buf_new(size_t size);
 Buffer *buf_resize(Buffer *b, size_t size);
 /* Make a buffer exactly the size of the data it contains */
 Buffer *buf_fit(Buffer *b);
+
+#endif
