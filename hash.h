@@ -8,8 +8,7 @@
 #include <limits.h>
 
 /* Hash tables are constructed from chains of HashNodes, which contain
-   a link to the next node, and pointers to the key and data
-   objects. */
+   a link to the next node, and pointers to the key and data. */
 typedef struct HashNode HashNode;
 struct HashNode {
   HashNode *next;
