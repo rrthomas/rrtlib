@@ -1,66 +1,59 @@
-/* Vectors (extensible arrays) */
+/* Vectors (auto-extending arrays) */
 
+#include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "memory.h"
 #include "vector.h"
 
 
-/* Create a buffer with initial size size */
+/* Create a vector whose items' size is size */
 Vector *
 vec_new(size_t size)
 {
-  Vector *b = new(Vector);
-  b->size = size;
-  b->used = 0;
-  b->data = exc_malloc(size);
-  return b;
+  Vector *v = new(Vector);
+  vec_itemsize(v) = size;
+  vec_items(v) = 0;
+  v->size = 0;
+  v->array = NULL;
+  return v;
 }
 
-/* Free a buffer b */
+/* Free a vector v */
 void
-vec_free(Vector *b)
+vec_free(Vector *v)
 {
-  free(b->data);
-  free(b);
+  free(v->array);
+  free(v);
 }
 
-/* Convert a buffer to a byte array */
-uint8_t *
-vec_toarray(Vector *b) {
-  uint8_t *d;
-  vec_realloc(b, 0);
-  d = b->data;
-  free(b);
-  return d;
+/* Resize a vector v to items elements */
+static Vector *
+resize(Vector *v, size_t items)
+{
+  v->size = items;
+  v->array = exc_realloc(v->array, items * vec_itemsize(v));
+  return v;
 }
 
-/* Resize a buffer b to max(size, b->used) */
-Vector *
-vec_realloc(Vector *b, size_t size)
-{
-  b->size = size > b->used ? size : b->used;
-  b->data = exc_realloc(b->data, b->size);
-  return b;
+/* Convert a vector to an array */
+void *
+vec_toarray(Vector *v) {
+  void *a;
+  resize(v, vec_items(v));
+  a = v->array;
+  free(v);
+  return a;
 }
 
-/* Ensure a buffer b is at least size size */
-Vector *
-vec_grow(Vector *b, size_t size)
+/* Return the address of a vector element, growing the array if
+   needed */
+void *
+vec_index(Vector *v, size_t idx)
 {
-  if (size > b->size) {
-    b->size = size > b->size * 2 ? size : b->size * 2;
-    b->data = exc_realloc(b->data, b->size);
-  }
-  return b;
-}
-
-/* Add an n-byte block of data d of to a buffer b */
-void
-vec_addblk(Vector *b, size_t n, const uint8_t *d)
-{
-  b = vec_realloc(b, b->used + n);
-  memcpy((char *)b->data + b->used, d, n);
-  b->used += n;
+  if (idx >= v->size)
+    v = resize(v, idx >= v->size * 2 ? idx + 1 : v->size * 2);
+  if (idx >= vec_items(v))
+    vec_items(v) = idx + 1;
+  return (void *)((uint8_t *)v->array + idx * vec_itemsize(v));
 }

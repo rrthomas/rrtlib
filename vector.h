@@ -1,37 +1,35 @@
-/* Vectors (extensible arrays) */
+/* Vectors (auto-extending arrays) */
+
+/* Unitialised vector elements are zeroed */
 
 #ifndef VECTOR_H
 #define VECTOR_H
 
 #include <stddef.h>
-#include <stdint.h>
 
 typedef struct {
-  size_t size;                  /* number of bytes reserved in data */
-  size_t used;                  /* number of bytes used in data */
-  uint8_t *data;
+  size_t itemsize;              /* size of each item in bytes */
+  size_t items;                 /* number of items used */
+  size_t size;                  /* number of items available */
+  void *array;                  /* the array of contents */
 } Vector;
 
-Vector *vec_new(size_t size);
-void vec_free(Vector *b);
-uint8_t *vec_toarray(Vector *b);
-Vector *vec_realloc(Vector *b, size_t size);
-Vector *vec_grow(Vector *b, size_t size);
-void vec_addblk(Vector *b, size_t n, const uint8_t *d);
+Vector *vec_new(size_t nobj);
+void vec_free(Vector *v);
+void *vec_toarray(Vector *v);
+void *vec_index(Vector *v, size_t idx);
 
-#define vec_size(b) (b)->size
-#define vec_used(b) (b)->used
-#define vec_data(b) (b)->data
+#define vec_itemsize(v) (v)->itemsize
+#define vec_items(v)    (v)->items
 
-/* Align buffer b's b->used to the nearest n bytes (n a power of 2) */
-#define vec_align(b, n) \
-  (b)->used = (size_t)((b)->used + n - 1) & ~(n - 1)
 
-/* Add an object d of type t to a buffer b */
-#define vec_add(b, t, d) \
-  (b) = vec_grow((b), (b)->used + sizeof(t)), \
-  *(t *)((uint8_t *)(b)->data + b->used) = (d), \
-  (b)->used += sizeof(t)
+/* Macros in order to get memcpy inlined*/
+
+#define vec_get(v, idx, res) \
+   memcpy((res), vec_index((v), (idx)), sizeof(res))
+
+#define vec_set(v, idx, val) \
+   memcpy(vec_index((v), (idx)), (val), sizeof(val))
 
 
 #endif

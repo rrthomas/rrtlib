@@ -6,32 +6,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct {
-  size_t size;                  /* number of bytes reserved in data */
-  size_t used;                  /* number of bytes used in data */
-  uint8_t *data;
-} Buffer;
+#include "vector.h"
 
-Buffer *buf_new(size_t size);
+typedef Vector Buffer;
+
+Buffer *buf_new(void);
 void buf_free(Buffer *b);
 uint8_t *buf_toarray(Buffer *b);
-Buffer *buf_realloc(Buffer *b, size_t size);
-Buffer *buf_grow(Buffer *b, size_t size);
 void buf_addblk(Buffer *b, size_t n, const uint8_t *d);
-
-#define buf_size(b) (b)->size
-#define buf_used(b) (b)->used
-#define buf_data(b) (b)->data
-
-/* Align buffer b's b->used to the nearest n bytes (n a power of 2) */
-#define buf_align(b, n) \
-  (b)->used = (size_t)((b)->used + n - 1) & ~(n - 1)
+size_t buf_used(Buffer *b);
+void buf_align(Buffer *b, size_t n);
 
 /* Add an object d of type t to a buffer b */
 #define buf_add(b, t, d) \
-  (b) = buf_grow((b), (b)->used + sizeof(t)), \
-  *(t *)((uint8_t *)(b)->data + b->used) = (d), \
-  (b)->used += sizeof(t)
+  (void)vec_index((Vector *)b, buf_used(b) + sizeof(t) - 1), \
+  *(t *)vec_index((Vector *)b, buf_used(b) - sizeof(t)) = (d)
 
 
 #endif
