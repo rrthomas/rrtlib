@@ -7,8 +7,8 @@
 LIBDIR = $(HOME)/lib
 INCDIR = $(HOME)/include/rrt
 
-CFLAGS = -g -fPIC -pedantic -Wall -W
-LDFLAGS = -L. -lRRT
+CFLAGS = -g -pedantic -fPIC -Wall -W
+LDFLAGS = -L. -lRRT -fPIC
 
 
 # Targets
