@@ -89,7 +89,7 @@ enum {
 
 /* returns the hash value of an element in a table */
 /* This is currently wrong: needs to look at data! */
-#define hash(t, key, keysize)    (hashmod((t), (size_t)(key)))
+#define hash(t, key, keysize)    ((void)keysize, hashmod((t), (size_t)(key)))
 
 
 /* returns the index for `key' if `key' is an appropriate key to live
@@ -168,7 +168,7 @@ numuse(const HashTable *t, size_t *narray, size_t *nhash)
 {
   size_t nums[MAXBITS + 2];
   size_t i, lg;
-  size_t totaluse = 0;
+  size_t totaluse = 0;  /* only used for consistency checks */
   /* count elements in array part */
   for (i = 0, lg = 0; lg <= MAXBITS; lg++) {  /* for each slice [2^(lg-1) to 2^lg) */
     size_t ttlg = 1 << lg;
@@ -201,8 +201,6 @@ numuse(const HashTable *t, size_t *narray, size_t *nhash)
       totaluse++;
     }
   }
-  /* TODO: Get rid of this assert and the associated calculation of
-     totaluse when convinced everything's working */
   assert(t->nodeitems + t->arrayitems == totaluse);
   assert(t->arrayitems <= *narray);
   computesizes(nums, totaluse, narray, nhash);
@@ -424,14 +422,14 @@ hash_find(HashTable *t, const HashKey key, size_t size)
     return (HashValue *)getblk(t, key, size);
 }
 
-inline void
+void
 hash_set(HashTable *t, const HashKey key, size_t size, HashValue val)
 {
   assert(val);
   *hash_ensure(t, key, size) = val;
 }
 
-inline HashValue
+HashValue
 hash_get(HashTable *t, HashKey key, size_t size)
 {
   return *hash_find(t, key, size);
