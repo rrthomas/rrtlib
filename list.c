@@ -1,91 +1,114 @@
+/* Circular doubly-linked list/queue */
+
 #include <stdlib.h>
 #include "except.h"
 #include "list.h"
 
+/* Create an empty list, returning a pointer to the list */
 List *
-listNew(void)
+list_new(void)
 {
-    List *l= new(List);
+    List *l = new(List);
 
-    l->next= l->prev= l; l->item= NULL;
+    l->next = l->prev = l;
+    l->item = NULL;
+
     return l;
 }
 
+/* Destroy a list */
 void
-listDestroy(List *l)
+list_destroy(List *l)
 {
-    List *p, *q= l->next;
+    List *p, *q = l->next;
 
-    for (p= l->next; q != l; p= q) {
-        q= p->next;
+    for (p = l->next; q != l; p = q) {
+        q = p->next;
         free(p->item);
         free(p);
     }
     free(l);
 }
 
+/* Test whether a list is empty */
 int
-listEmpty(List *l)
+list_empty(List *l)
 {
-    return (l->next == l);
+    return l->next == l;
 }
 
+/* Return the length of a list */
 unsigned long
-listLength(List *l)
+list_length(List *l)
 {
     List *lp;
-    unsigned long length= 0;
+    unsigned long length = 0;
 
-    for (lp= l->next; lp != l; lp= lp->next) ++length;
+    for (lp = l->next; lp != l; lp = lp->next)
+      ++length;
 
     return length;
 }
 
+/* Add an item to the head of a list, returning the new list head */
 List *
-listPrefix(List *l, void *i)
+list_prefix(List *l, void *i)
 {
-    List *n= new(List);
+    List *n = new(List);
 
-    n->next= l->next; n->prev= l; n->item= i;
-    l->next->prev= n; l->next= n;
+    n->next = l->next;
+    n->prev = l;
+    n->item = i;
+    l->next = l->next->prev = n;
 
     return n;
 }
 
+/* Add an item to the tail of a list, returning the new list tail */
 List *
-listSuffix(List *l, void *i)
+list_suffix(List *l, void *i)
 {
-    List *n= new(List);
+    List *n = new(List);
 
-    n->next= l; n->prev= l->prev; n->item= i;
-    l->prev->next= n; l->prev= n;
+    n->next = l;
+    n->prev = l->prev;
+    n->item = i;
+    l->prev = l->prev->next = n;
 
     return n;
 }
 
+/* Remove the first item of a list, returning the item, or NULL if the
+   list is empty. */
 void *
-listBehead(List *l)
+list_behead(List *l)
 {
     void *i;
-    List *d;
+    List *d = l->next;
 
-    if ((d= l->next) == l) return NULL;
-    i= d->item;
-    l->next= l->next->next; l->next->prev= l;
+    if (d == l)
+      return NULL;
+    i = d->item;
+    l->next = l->next->next;
+    l->next->prev = l;
     free(d);
 
     return i;
 }
 
+/* Remove the last item of a list, returning the item, or NULL if the
+   list is empty. */
 void *
-listBetail(List *l)
+list_betail(List *l)
 {
     void *i;
-    List *d;
+    List *d = l->prev;
 
-    if ((d= l->prev) == l) return NULL;
-    i= d->item;
-    l->prev= l->prev->prev; l->prev->next= l;
+    if (d == l)
+      return NULL;
+    i = d->item;
+    l->prev = l->prev->prev;
+    l->prev->next = l;
     free(d);
 
     return i;

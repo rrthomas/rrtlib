@@ -1,3 +1,5 @@
+/* Circular doubly-linked list/queue */
+
 #ifndef LIST_H
 #define LIST_H
 
@@ -8,13 +10,13 @@ struct List {
     void *item;
 };
 
-List *listNew(void);
-void listDestroy(List *l);
-int listEmpty(List *l);
-unsigned long listLength(List *l);
-List *listPrefix(List *l, void *i);
-List *listSuffix(List *l, void *i);
-void *listBehead(List *l);
-void *listBetail(List *l);
+List *list_new(void);
+void list_destroy(List *l);
+int list_empty(List *l);
+unsigned long list_length(List *l);
+List *list_prefix(List *l, void *i);
+List *list_suffix(List *l, void *i);
+void *list_behead(List *l);
+void *list_betail(List *l);
 
 #endif
