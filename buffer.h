@@ -23,9 +23,9 @@ void buf_addblk(Buffer *b, size_t n, const uint8_t *d);
 #define buf_used(b) (b)->used
 #define buf_data(b) (b)->data
 
-/* Align buffer b's b->used to the nearest 2^n bytes */
+/* Align buffer b's b->used to the nearest n bytes (n a power of 2) */
 #define buf_align(b, n) \
-  (b)->used = (size_t)((b)->used + (1 << n) - 1) & ~((1 << n) - 1)
+  (b)->used = (size_t)((b)->used + n - 1) & ~(n - 1)
 
 /* Add an object d of type t to a buffer b */
 #define buf_add(b, t, d) \
