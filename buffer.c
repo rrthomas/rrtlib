@@ -1,5 +1,7 @@
 /* Auto-extending buffer */
 
+#include <string.h>
+
 #include "memory.h"
 #include "buffer.h"
 
@@ -9,30 +11,45 @@ Buffer *
 buf_new(size_t size)
 {
   Buffer *b = new(Buffer);
-
   b->size = size;
+  b->used = 0;
   b->data = exc_malloc(size);
-
   return b;
 }
 
-/* Ensure a buffer's size is at least size */
-Buffer *
-buf_resize(Buffer *b, size_t size)
+/* Free a buffer b */
+void
+buf_free(Buffer *b)
 {
-  if (b->size < size) {
+  free(b->data);
+  free(b);
+}
+
+/* Resize a buffer b to max(size, b->used) */
+Buffer *
+buf_realloc(Buffer *b, size_t size)
+{
+  b->size = size > b->used ? size : b->used;
+  b->data = exc_realloc(b->data, b->size);
+  return b;
+}
+
+/* Ensure a buffer b is at least size size */
+Buffer *
+buf_grow(Buffer *b, size_t size)
+{
+  if (size > b->size) {
     b->size = size > b->size * 2 ? size : b->size * 2;
     b->data = exc_realloc(b->data, b->size);
   }
-
   return b;
 }
 
-/* Make a buffer exactly the size of the data it contains */
-Buffer *
-buf_fit(Buffer *b)
+/* Add a block of data d of size n to a buffer b */
+void
+buf_addblk(Buffer *b, size_t n, const void *d)
 {
-  b->data = exc_realloc(b->data, b->used);
-
-  return b;
+  b = buf_realloc(b, b->used + n);
+  b->used += n;
+  memcpy((char *)b->data + b->used, d, n);
 }
