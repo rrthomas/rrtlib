@@ -14,7 +14,7 @@ typedef struct {
   void *array;                  /* the array of contents */
 } Vector;
 
-Vector *vec_new(size_t nobj);
+Vector *vec_new(size_t itemsize);
 void vec_free(Vector *v);
 void *vec_toarray(Vector *v);
 void *vec_index(Vector *v, size_t idx);
@@ -23,7 +23,7 @@ void *vec_index(Vector *v, size_t idx);
 #define vec_items(v)    (v)->items
 
 
-/* Macros in order to get memcpy inlined*/
+/* Use macros so that memcpy is inlined */
 
 #define vec_get(v, idx, res) \
    memcpy((res), vec_index((v), (idx)), sizeof(res))

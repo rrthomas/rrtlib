@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "memory.h"
 #include "vector.h"
@@ -9,10 +10,10 @@
 
 /* Create a vector whose items' size is size */
 Vector *
-vec_new(size_t size)
+vec_new(size_t itemsize)
 {
   Vector *v = new(Vector);
-  vec_itemsize(v) = size;
+  vec_itemsize(v) = itemsize;
   vec_items(v) = 0;
   v->size = 0;
   v->array = NULL;
