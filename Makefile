@@ -12,7 +12,7 @@ CFLAGS = -O2 -fPIC -pedantic -Wall -W
 
 # Targets
 
-libs = list except hash string stream memory
+libs = except memory string stream list hash buffer
 srcs = $(addsuffix .c, $(libs))
 objs = $(addsuffix .o, $(libs))
 docs = $(addsuffix .html, $(libs))
