@@ -54,7 +54,7 @@ list_length(List *l)
 
 /* Add an item to the head of a list, returning the new list head */
 List *
-list_prefix(List *l, void *i)
+list_prefix(List *l, const void *i)
 {
   List *n = new(List);
 
@@ -68,7 +68,7 @@ list_prefix(List *l, void *i)
 
 /* Add an item to the tail of a list, returning the new list tail */
 List *
-list_suffix(List *l, void *i)
+list_suffix(List *l, const void *i)
 {
   List *n = new(List);
 
@@ -78,6 +78,18 @@ list_suffix(List *l, void *i)
   l->prev = l->prev->next = n;
 
   return n;
+}
+
+/* Return the first item of a list, or NULL if the list is empty */
+void *
+list_head(List *l)
+{
+  List *d = l->next;
+
+  if (d == l)
+    return NULL;
+
+  return d->item;
 }
 
 /* Remove the first item of a list, returning the item, or NULL if the
