@@ -1,34 +1,49 @@
-/* Open hash tables */
+/* Hash tables */
 
 #ifndef HASH_H
 #define HASH_H
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <limits.h>
 
-/* Hash tables are constructed from chains of HashNodes, which contain
-   a link to the next node, and pointers to the key and data. */
+/* Parameter type: key in the tables; must be a pointer type */
+typedef void *HashKey;
+
+/* Parameter type: objects in the tables; needn't be a pointer type */
+typedef void *HashValue;
+
+/* Hash tables are constructed from chains of HashNodes */
 typedef struct HashNode HashNode;
 struct HashNode {
-  HashNode *next;
-  void *key;
-  void *data;
+  HashNode *next;  /* next in chain */
+  HashKey key;
+  size_t keysize;  /* size of the key object: if 0, key equality test
+                      uses value of key field, otherwise it uses
+                      keysize bytes at address pointed to by key
+                      field*/
+  HashValue val;
 };
 
-/* A hash table consists of a pointer to an array of HashNodes and the
-   size of the array. */
-typedef struct {
-  size_t size;
-  HashNode *chain;
+typedef struct HashTable {
+  uint8_t lsizenode;  /* log2 of size of hash table */
+  HashValue *array;  /* array (array of pointers to values) */
+  size_t arraysize;  /* size of array */
+  HashNode *node;  /* hash table (array of hash nodes) */
+  HashNode *lastfree;  /* this position is free; all positions after
+                          it are full (assuming no deletions) */
+  size_t arrayitems;  /* number of items in array */
+  size_t nodeitems;  /* number of items in hash table */
 } HashTable;
 
-HashTable *hash_new(size_t size);
-void hash_free(HashTable *table);
-HashNode *hash_find(HashTable *table, void *key);
-void *hash_get(HashTable *table, void *key);
-void hash_set(HashTable *table, void *key, void *body);
-
-#define HASH_MAX_SIZE (sizeof(size_t) * CHAR_BIT - 1)
+HashTable *hash_new(void);
+void hash_free(HashTable *t);
+HashValue *hash_find(HashTable *t, HashKey key, size_t size);
+HashValue *hash_ensure(HashTable *t, HashKey key, size_t size);
+inline void hash_set(HashTable *t, const HashKey key, size_t size, HashValue val);
+HashValue hash_get(HashTable *t, HashKey key, size_t size);
+HashValue hash_remove(HashTable *t, HashKey key, size_t size);
+int hash_next(HashTable *t, HashKey *keyp, HashValue *valp, size_t size);
 
 #endif
