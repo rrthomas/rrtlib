@@ -14,6 +14,7 @@ LDFLAGS = -L. -lRRT
 # Targets
 
 lib = libRRT.so
+zip = rrtlib.zip
 libs = except memory string stream list hash buffer
 srcs = $(addsuffix .c, $(libs))
 hdrs = $(addsuffix .h, $(libs))
@@ -38,18 +39,18 @@ test: $(tests)
 		LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):. $$i; \
 	done
 
-install: libRRT.so
-	install -s libRRT.so $(LIBDIR)
+install: $(lib)
+	install -s $(lib) $(LIBDIR)
 	install -m 644 *.h $(INCDIR)
 
 clean:
-	rm -f *.o
+	rm -f $(objs) $(tests)
 
 veryclean: clean
-	rm -f libRRT.so $(docs) rrtlib.zip
+	rm -f $(lib) $(docs) $(zip)
 
 distclean: veryclean
 
 dist:
-	zip -qr rrtlib.zip Makefile *.c *.h \
+	zip -qr $(zip) Makefile *.c *.h \
 	mv rrtlib.zip /home/rrt/public_html/download/software/
