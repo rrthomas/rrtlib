@@ -27,7 +27,7 @@ int main(void)
   assert(list_length(l) == 3);
 
   /* Check items in list are in the right order, and list is circular;
-     N.B. This code is naughty, as it assumes the representation */
+     N.B. This code is naughty, as it violates the API */
   p = l->next;
   assert(strcmp(p->item, "bar") == 0);
   p = p->next;
