@@ -39,7 +39,7 @@ test: $(tests)
 	done
 
 install: test $(lib)
-	install -s $(lib) $(LIBDIR)
+	install $(lib) $(LIBDIR)
 	install -m 644 *.h $(INCDIR)
 
 clean:
