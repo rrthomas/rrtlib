@@ -11,7 +11,7 @@ bstrcmp(const void *s, const void *t)
 }
 
 int
-bstrcmpp(const void *s, const void *t)
+bstrcmp_prefix(const void *s, const void *t)
 {
     return strncmp(*(const char **)s, *(const char **)t,
         strlen(*(const char **)t));
@@ -28,10 +28,10 @@ strBsearch(const char *s, const char *base[], size_t n)
 }
 
 ptrdiff_t
-strBsearchp(const char *s, const char *base[], size_t n)
+strBsearch_prefix(const char *s, const char *base[], size_t n)
 {
     const char **p= (const char **)bsearch(&s, base, n, sizeof(char *),
-        bstrcmpp);
+        bstrcmp_prefix);
 
     if (!p) return -1;
     return p - base;

@@ -7,6 +7,6 @@
 #define strEq(s,t) (((s) && (t)) ? !strcmp((s), (t)) : (s) == (t))
 
 ptrdiff_t strBsearch(const char *s, const char *base[], size_t n);
-ptrdiff_t strBsearchp(const char *s, const char *base[], size_t n);
+ptrdiff_t strBsearch_prefix(const char *s, const char *base[], size_t n);
 
 #endif
