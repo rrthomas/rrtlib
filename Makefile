@@ -4,22 +4,7 @@
 LIBDIR = $(HOME)/lib
 INCDIR = $(HOME)/include/rrt
 
-CFLAGS = -O3 -fPIC
-NUWEB.prg = nuweb -tc
-NUWEB.doc = nuweb -npc
-LATEX = latex
-
-# Compilation rules
-
-.SUFFIXES: .w .tex .dvi
-.w.c:
-	$(NUWEB.prg) $<
-.w.h:
-	$(NUWEB.prg) $<
-.w.tex:
-	$(NUWEB.doc) -o $@ $<
-.tex.dvi:
-	$(LATEX) $<
+CFLAGS = -O2 -fPIC
 
 
 # Targets
@@ -60,5 +45,4 @@ veryclean: clean
 
 dist:
 	zip -qr rrtlib.zip Makefile *.w libdoc.tex \
-		~/texmf/tex/latex/rrt/{literate,include}.sty
 	mv rrtlib.zip /home/rrt/public_html/download/software/

@@ -1,0 +1,26 @@
+The RRTLib C library
+
+Reuben Thomas   17/4/97-16/4/02
+
+
+Introduction
+
+The RRTLib C library is my personal library of general-purpose
+routines that have been or are likely to be used in more than one
+program. The C conforms to the ISO 99 standard, using only standard
+libraries.
+
+
+License
+
+RRTLib is distributed under the MIT license
+(http://www.opensource.org/licenses/mit-license.html) and comes with
+no warranty.
+
+
+Exceptions
+Lists
+Open hash tables
+String utilities
+Stream utilities
+Memory utilities
