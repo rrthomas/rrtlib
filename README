@@ -19,9 +19,10 @@ RRTLib is distributed under the MIT license
 no warranty.
 
 
+Auto-extending buffers
 Exceptions
 Lists
-Open hash tables
+Hash tables
 String utilities
 Stream utilities
 Memory utilities
