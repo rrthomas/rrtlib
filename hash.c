@@ -6,7 +6,7 @@
 #include <limits.h>
 #include <assert.h>
 
-#include <stdio.h>
+#include <stdio.h> /* TODO remove when debugging gone */
 
 #include "memory.h"
 #include "except.h"
@@ -37,17 +37,14 @@
 
    Then should be able to have a general hash table (with
    automatic/manual rehashing option) that doesn't have the vector
-   part. This might not be worth it, except for performance reasons in
-   cases where the rehashing between vector and hash table would be
-   pathological. Hard to imagine. The reason it might not be worth it
-   is that in the hybrid case the "pure" hash table rehashing code
-   won't be used (? if this could be done, it might well help reduce
-   complexity and increase performance choices).
+   part.
 
    Finally, build the hybrid vector/hash table on top of these two.
    Work hard to make both data structure size collapse and performance
    boost in the case where functionality isn't used, so there's no
    excuse not to use the hybrid data structure for everything.
+   Rehashing: strip out elements into the array / move elements out of
+   the array, then call the hash table type's rehash routine.
 
    Make faster hash_next (that doesn't need to compute the hash
    function for each item) in the case where concurrent access to the
@@ -107,13 +104,13 @@
 
 /* The hash tables keep their elements in two parts: an array part and
    a hash part. Non-negative integer keys are candidates to be kept in
-   the array part. The actual size of the array is the largest `n'
-   such that at least half the slots between 0 and n are in use. The
-   hash part is a closed hash table using a mix of chained scatter
-   table with Brent's variation. Like open hash tables, collisions
-   occur only when two elements have the same hash value. Because of
-   that, good performance is still achieved with high loads (up to
-   100%).
+   the array part. The actual size of the array is the largest power
+   of 2 `n' such that at least half the slots between 0 and n are in
+   use. The hash part is a closed hash table using a mix of chained
+   scatter table with Brent's variation. Like open hash tables,
+   collisions occur only when two elements have the same hash value.
+   Because of that, good performance is still achieved with high loads
+   (up to 100%).
 */
 
 /* Size of hash pointer array */
@@ -261,7 +258,7 @@ numuse(const HashTable *t, size_t *narray, size_t *nhash)
     HashNode *n = &t->node[i];
     if (n->val != NULL) {
       int k = arrayindex(n->key);
-      if (k != 0) {  /* is `key' an appropriate array index? */
+      if (k != 0 && n->keysize != 0) {  /* is `key' an appropriate array index? */
         nums[log2(k - 1) + 1]++;  /* count as such */
         (*narray)++;
       }
@@ -361,10 +358,14 @@ newkey(HashTable *t, HashKey key, size_t keysize)
   if (mp->val != NULL) {  /* main position is not free? */
     HashNode *othern = hash(t, mp->key, mp->keysize);  /* `mp' of colliding node */
     HashNode *n = t->lastfree;  /* get a free place */
+    fprintf(stderr, "%p, %p %p %d\n", (void *)othern, (void *)mp, (void *)mp->key, mp->keysize);
     if (othern != mp) {  /* is colliding node out of its main position? */
       /* yes; move colliding node into free position */
-      while (othern->next != mp)  /* find previous */
+      while (othern->next != mp) {  /* find previous */
+        fprintf(stderr, "%p\n", (void *)othern->next);
+        assert(othern->next);
         othern = othern->next;
+      }
       othern->next = n;  /* redo the chain with `n' in place of `mp' */
       *n = *mp;  /* copy colliding node into free pos. (mp->next also goes) */
       mp->next = NULL;  /* now `mp' is free */
@@ -377,6 +378,7 @@ newkey(HashTable *t, HashKey key, size_t keysize)
     }
   }
   mp->key = key;  /* write barrier */
+  mp->keysize = keysize;
   assert(mp->val == NULL);
   for (;;) {  /* correct lastfree */
     if (t->lastfree->val == NULL && mp != t->lastfree)
@@ -390,7 +392,7 @@ newkey(HashTable *t, HashKey key, size_t keysize)
   mp->val = (HashKey)1;  /* avoid new key being removed */
   rehash(t);  /* grow table */
   val = hash_find(t, key, 0);  /* get new position */
-  assert(*val == (HashKey)1);
+  assert(val && *val == (HashKey)1);
   *val = NULL;
   return val;
 }
@@ -505,9 +507,9 @@ hash_get(HashTable *t, HashKey key, size_t size)
 HashValue *
 hash_ensure(HashTable *t, HashKey key, size_t keysize)
 {
-  const HashValue *p = hash_find(t, key, keysize);
+  HashValue *p = hash_find(t, key, keysize);
   if (p != NULL) {
-    if (arrayindex(key) != 0 && *p == NULL)
+    if (keysize == 0 && arrayindex(key) != 0 && *p == NULL)
       t->arrayitems++;
     return p;
   } else {
