@@ -7,6 +7,7 @@
 #include "except.h"
 #include "list.h"
 
+
 char *progname = "list_test";
 
 int main(void)
