@@ -16,6 +16,7 @@ LDFLAGS = -L. -lRRT
 lib = libRRT.so
 libs = except memory string stream list hash buffer
 srcs = $(addsuffix .c, $(libs))
+hdrs = $(addsuffix .h, $(libs))
 objs = $(addsuffix .o, $(libs))
 docs = $(addsuffix .html, $(libs))
 tests = list_test hash_test buffer_test # $(addsuffix _test, $(libs))
@@ -27,7 +28,7 @@ lib: $(lib)
 
 #doc: $(docs)
 
-$(lib): $(objs)
+$(lib): $(objs) $(hdrs)
 	$(CC) -shared -o $@ $(objs)
 
 $(tests): $(lib)
