@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 
-#include "except.h"
 #include "memory.h"
 #include "list.h"
 
