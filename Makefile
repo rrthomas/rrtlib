@@ -1,10 +1,13 @@
 # Makefile for RRTLib C library
-# Reuben Thomas   26/10/96-20/10/03
+# (c) Reuben Thomas 1996-2003
+
+# TODO: Use a more sensible build system that deals with dependencies
+# properly; provide a trivial build script for people who don't have it.
 
 LIBDIR = $(HOME)/lib
 INCDIR = $(HOME)/include/rrt
 
-CFLAGS = -O2 -fPIC
+CFLAGS = -O2 -fPIC -pedantic -Wall -W
 
 
 # Targets
@@ -12,37 +15,30 @@ CFLAGS = -O2 -fPIC
 libs = list except hash string stream memory
 srcs = $(addsuffix .c, $(libs))
 objs = $(addsuffix .o, $(libs))
-docs = $(addsuffix .tex, $(libs))
+docs = $(addsuffix .html, $(libs))
 
 
 # How to make the libraries
 
 lib: libRRT.so
 
-list.c: except.h
-
-rrtlib.c: $(srcs)
-	cat $(srcs) > $@
-
-doc: $(docs) libdoc.tex
-	prv libdoc
+#doc: $(docs)
 
 libRRT.so: $(objs)
 	$(CC) -s -shared -o $@ $(objs)
 
-install: libRRT.so rrtlib.c
+install: libRRT.so
 	install libRRT.so $(LIBDIR)
-	install -m 644 *.h rrtlib.c $(INCDIR)
-	deline $(INCDIR)/{*.h,rrtlib.c}
-	./repath.sh $(INCDIR)/{*.h,rrtlib.c}
+	install -m 644 *.h $(INCDIR)
 
 clean:
-	rm -f *.o *.so *.c rrtlib.zip
-	prv -clean libdoc
+	rm -f *.o
 
 veryclean: clean
-	rm -f *.h libRRT.so $(docs)
+	rm -f libRRT.so $(docs) rrtlib.zip
+
+distclean: veryclean
 
 dist:
-	zip -qr rrtlib.zip Makefile *.w libdoc.tex \
+	zip -qr rrtlib.zip Makefile *.c *.h \
 	mv rrtlib.zip /home/rrt/public_html/download/software/
