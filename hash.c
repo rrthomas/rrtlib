@@ -12,6 +12,53 @@
 #include "except.h"
 #include "hash.h"
 
+/* TODO
+
+   Add macros for easier use of common key types: string (with and
+   without explicit lengths) and numbers. These should avoid pointless
+   extra arguments and casts.
+
+   Get rid of memory macros (add this stuff to the memory library so
+   that RRTLib in general can have its allocator replaced).
+
+   Make hash table part open: in case of overflow, it should start
+   allocing extra nodes. This prevents getting sudden pauses owing to
+   rehashing. Allow manual or automatic rehashing (with automatic
+   rehashing will therefore work as at present: table will always be
+   rehashed and never overflow). The main problem is working out which
+   nodes need freeing, but that's fairly obvious using a range check
+   on the node array.
+
+   The Tecgraf code in general needs to be refactored: some functions
+   are too large and complex, and there are too many macros. There are
+   also some nasty assymmetries in the data structure design. By
+   changing the RRTLib buffer module into a more general vector
+   module, can use vectors for the array part of the hash table.
+
+   Then should be able to have a general hash table (with
+   automatic/manual rehashing option) that doesn't have the vector
+   part. This might not be worth it, except for performance reasons in
+   cases where the rehashing between vector and hash table would be
+   pathological. Hard to imagine. The reason it might not be worth it
+   is that in the hybrid case the "pure" hash table rehashing code
+   won't be used (? if this could be done, it might well help reduce
+   complexity and increase performance choices).
+
+   Finally, build the hybrid vector/hash table on top of these two.
+   Work hard to make both data structure size collapse and performance
+   boost in the case where functionality isn't used, so there's no
+   excuse not to use the hybrid data structure for everything.
+
+   Make faster hash_next (that doesn't need to compute the hash
+   function for each item) in the case where concurrent access to the
+   table is not required. This requires the ability to lock tables.
+
+   Make it thread-safe.
+
+   Compare performance with libtc.
+
+*/
+
 
 /******************************************************************************
 * Copyright (C) 1994-2003 Tecgraf, PUC-Rio.  All rights reserved.
@@ -87,16 +134,36 @@ enum {
 #define hashmod(t, n)	(&t->node[((n) % ((sizenode(t) - 1) | 1))])
 
 
-/* returns the hash value of an element in a table */
-/* This is currently wrong: needs to look at data! */
-#define hash(t, key, keysize)    ((void)keysize, hashmod((t), (size_t)(key)))
+/* General hash function (the bit that deals with non-zero-size keys
+   is from (http://burtleburtle.net/bob/hash/doobs.html) */
+HashNode *hash(HashTable *t, const HashKey key, size_t keysize)
+{
+  size_t hash;
+  assert(key != NULL);
+  if (keysize == 0)
+    hash = (size_t)key;
+  else {
+    size_t i;
+    uint32_t h = 0;
+    for (i = 0; i < keysize; i++) {
+      h += ((uint8_t *)key)[i];
+      h += (h << 10);
+      h ^= (h >> 6);
+    }
+    h += h << 3;
+    h ^= h >> 11;
+    h += h << 15;
+    hash = (size_t)h;
+  }
+  return hashmod(t, hash);
+}
 
 
 /* returns the index for `key' if `key' is an appropriate key to live
    in the array part of the table, -1 otherwise.
 */
 static size_t
-arrayindex(const HashKey *key)
+arrayindex(const HashKey key)
 {
   if ((size_t)key >= 1 && !toobig((size_t)key))
     return (size_t)key;
@@ -253,7 +320,7 @@ resize(HashTable *t, int nasize, int nhsize)
     /* re-insert elements from vanishing slice */
     for (i = nasize; i < oldasize; i++) {
       if (t->array[i] != NULL)
-        hash_set(t, (HashKey *)(i + 1), 0, &t->array[i]);
+        hash_set(t, (HashKey)(i + 1), 0, (HashValue)&t->array[i]);
     }
     /* shrink array */
     mem_crealloc(t->array, oldasize, nasize, HashKey);
@@ -287,9 +354,9 @@ rehash(HashTable *t)
    its main position.
 */
 static HashValue *
-newkey(HashTable *t, HashKey *key, size_t keysize)
+newkey(HashTable *t, HashKey key, size_t keysize)
 {
-  HashKey *val;
+  HashValue *val;
   HashNode *mp = hash(t, key, keysize);
   if (mp->val != NULL) {  /* main position is not free? */
     HashNode *othern = hash(t, mp->key, mp->keysize);  /* `mp' of colliding node */
@@ -309,7 +376,7 @@ newkey(HashTable *t, HashKey *key, size_t keysize)
       mp = n;
     }
   }
-  mp->key = (HashKey *)key;  /* write barrier */
+  mp->key = key;  /* write barrier */
   assert(mp->val == NULL);
   for (;;) {  /* correct lastfree */
     if (t->lastfree->val == NULL && mp != t->lastfree)
@@ -331,7 +398,7 @@ newkey(HashTable *t, HashKey *key, size_t keysize)
 
 /* generic search function */
 static const HashValue *
-getblk(HashTable *t, const HashKey *key, size_t keysize)
+getblk(HashTable *t, const HashKey key, size_t keysize)
 {
   assert(keysize > 0);
   if (key == NULL)
@@ -369,7 +436,7 @@ getptr(HashTable *t, size_t key)
 
 /* remove a node */
 static void remnode(HashTable *t, HashNode *p) {
-  HashNode *n = hash(t, (size_t)p->key, p->keysize);
+  HashNode *n = hash(t, p->key, p->keysize);
   HashNode *prev = NULL;
   while (n != (HashNode *)p && n) {  /* Find the previous node in the chain, if any */
     n = n->next;
@@ -440,9 +507,9 @@ hash_ensure(HashTable *t, HashKey key, size_t keysize)
 {
   const HashValue *p = hash_find(t, key, keysize);
   if (p != NULL) {
-    if (arrayindex(key) != 0 && (HashValue *)p == NULL)
+    if (arrayindex(key) != 0 && *p == NULL)
       t->arrayitems++;
-    return (HashValue *)p;
+    return p;
   } else {
     t->nodeitems++;
     return newkey(t, key, keysize);
@@ -456,8 +523,10 @@ hash_remove(HashTable *t, HashKey key, size_t keysize)
   if (p) {
     HashKey o = *p;
     if (arrayindex(key) != 0) {
-      *p = NULL;
-      t->arrayitems--;
+      if (*p) {
+        t->arrayitems--;
+        *p = NULL;
+      }
       if (t->arrayitems < t->arraysize / 4)
         rehash(t);
     } else
@@ -475,8 +544,8 @@ hash_next(HashTable *t, HashKey *keyp, HashValue *valp, size_t keysize)
   if ((i = arrayindex(*keyp)) != 0) {
     for (; i < t->arraysize; i++) {  /* try first array part */
       if (t->array[i] != NULL) {  /* a non-NULL value? */
-        *keyp = (HashKey *)i;
-        *valp = &t->array[i];
+        *keyp = (HashKey)i;
+        *valp = t->array[i];
         return 1;
       }
     }
@@ -484,8 +553,8 @@ hash_next(HashTable *t, HashKey *keyp, HashValue *valp, size_t keysize)
   i = ((uint8_t *)v - (uint8_t *)&(&t->node[0])->val) / sizeof(HashNode);
   for (i -= t->arraysize; i < sizenode(t); i++) {  /* then hash part */
     if (t->node[i].val != NULL) {  /* a non-NULL value? */
-      *keyp = &(t->node[i].key);
-      *valp = &(t->node[i].val);
+      *keyp = t->node[i].key;
+      *valp = t->node[i].val;
       return 1;
     }
   }
