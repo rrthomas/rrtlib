@@ -9,10 +9,10 @@
 #include <limits.h>
 
 /* Parameter type: key in the tables; must be a pointer type */
-typedef void *HashKey;
+typedef uint8_t *HashKey;
 
 /* Parameter type: objects in the tables; needn't be a pointer type */
-typedef void *HashValue;
+typedef uint8_t *HashValue;
 
 /* Hash tables are constructed from chains of HashNodes */
 typedef struct HashNode HashNode;
@@ -21,8 +21,8 @@ struct HashNode {
   HashKey key;
   size_t keysize;  /* size of the key object: if 0, key equality test
                       uses value of key field, otherwise it uses
-                      keysize bytes at address pointed to by key
-                      field*/
+                      keysize bytes at address pointed to by the key
+                      field */
   HashValue val;
 };
 
