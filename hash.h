@@ -34,11 +34,8 @@ typedef struct {
 HashTable *hash_new(size_t size, Hasher hash, HashComparer compare);
 void hash_free(HashTable *table);
 HashNode *hash_find(HashTable *table, void *key);
+void *hash_get(HashTable *table, void *key);
 void hash_set(HashTable *table, void *key, void *body);
-
-/* Return the object associated with the given key */
-#define hash_get(table, key) \
-  hash_find((table), (key)).curr->data
 
 size_t hash_strhash(void *);
 bool hash_strcmp(void *, void *);

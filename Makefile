@@ -7,28 +7,36 @@
 LIBDIR = $(HOME)/lib
 INCDIR = $(HOME)/include/rrt
 
-CFLAGS = -O2 -fPIC -pedantic -Wall -W
+CFLAGS = -g -fPIC -pedantic -Wall -W
+LDFLAGS = -L. -lRRT
 
 
 # Targets
 
+lib = libRRT.so
 libs = except memory string stream list hash buffer
 srcs = $(addsuffix .c, $(libs))
 objs = $(addsuffix .o, $(libs))
 docs = $(addsuffix .html, $(libs))
+tests = $(addsuffix _test, $(libs))
 
 
 # How to make the libraries
 
-lib: libRRT.so
+lib: $(lib)
 
 #doc: $(docs)
 
-libRRT.so: $(objs)
-	$(CC) -s -shared -o $@ $(objs)
+$(lib): $(objs)
+	$(CC) -shared -o $@ $(objs)
+
+$(tests): $(lib)
+
+test: hash_test
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):. hash_test
 
 install: libRRT.so
-	install libRRT.so $(LIBDIR)
+	install -s libRRT.so $(LIBDIR)
 	install -m 644 *.h $(INCDIR)
 
 clean:

@@ -32,8 +32,6 @@ hash_free (HashTable *table)
   for (c = table->chain; c < end; c++)
     for (p = c->next; p != NULL; p = q) {
       q = p->next;
-      free(p->key);
-      free(p->data);
       free(p);
     }
   free(table->chain);
@@ -41,19 +39,28 @@ hash_free (HashTable *table)
 }
 
 /* Search a hash table for an object with key key, returning a pointer
-   to the HashNode, or the start of the chain in which it would go if
-   there is no such key. */
+   to the previous HashNode. If there is no such key, the next field
+   of the HashNode returned will be NULL. */
 HashNode *
 hash_find(HashTable *table, void *key)
 {
-  HashNode *start = table->chain + table->hash(key) % table->size;
-  HashNode *curr;
+  HashNode *prev, *curr;
 
-  for (curr = start;
+  for (prev = table->chain + (table->hash(key) % table->size),
+         curr = prev->next;    /* first link in chain has no data */
        curr != NULL && !table->compare(key, curr->key);
-       curr = curr->next);
+       prev = curr, curr = curr->next);
 
-  return curr != NULL ? curr : start;
+  return prev;
+}
+
+/* Return the object associated with the given key, or NULL if none */
+void *
+hash_get(HashTable *table, void *key)
+{
+  HashNode *prev = hash_find(table, key);
+
+  return prev->next ? prev->next->data : NULL;
 }
 
 /* Set key key in a hash table to object data. Return the previous
@@ -61,21 +68,21 @@ hash_find(HashTable *table, void *key)
 void
 hash_set(HashTable *table, void *key, void *data)
 {
-  HashNode *node = hash_find(table, key);
+  HashNode *prev = hash_find(table, key);
+  HashNode *node = prev->next;
 
-  if (node->data != NULL) {
-    free(node->data);
+  if (node != NULL) {
     if (data != NULL)
       node->data = data;
     else {
-      free(node->key);
+      prev->next = node->next;
       free(node);
     }
   } else if (data) {
-    HashNode *new = new(HashNode);
-    node->next = new;
-    new->key = key;
-    new->data = data;
+    node = new(HashNode);
+    prev->next = node;
+    node->key = key;
+    node->data = data;
   }
 }
 
