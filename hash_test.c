@@ -75,6 +75,8 @@ int main(void)
   hash_remove(t, (HashKey)5, 0);
 
   /* Special case for key 0 */
+  hash_set(t, (HashKey)0, 0, "whiz");
+  assert(strcmp(hash_get(t, (HashKey)0, 0), "whiz") == 0);
 
 
   /* Object tests */
