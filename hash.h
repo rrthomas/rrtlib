@@ -41,7 +41,7 @@ HashTable *hash_new(void);
 void hash_free(HashTable *t);
 HashValue *hash_find(HashTable *t, HashKey key, size_t size);
 HashValue *hash_ensure(HashTable *t, HashKey key, size_t size);
-inline void hash_set(HashTable *t, const HashKey key, size_t size, HashValue val);
+void hash_set(HashTable *t, const HashKey key, size_t size, HashValue val);
 HashValue hash_get(HashTable *t, HashKey key, size_t size);
 HashValue hash_remove(HashTable *t, HashKey key, size_t size);
 int hash_next(HashTable *t, HashKey *keyp, HashValue *valp, size_t size);
