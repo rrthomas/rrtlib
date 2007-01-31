@@ -29,12 +29,11 @@ vec_free(Vector *v)
 }
 
 /* Resize a vector v to items elements */
-static Vector *
+static void
 resize(Vector *v, size_t items)
 {
   v->size = items;
   v->array = exc_realloc(v->array, items * vec_itemsize(v));
-  return v;
 }
 
 /* Convert a vector to an array */
@@ -53,7 +52,7 @@ void *
 vec_index(Vector *v, size_t idx)
 {
   if (idx >= v->size)
-    v = resize(v, idx >= v->size * 2 ? idx + 1 : v->size * 2);
+    resize(v, idx >= v->size * 2 ? idx + 1 : v->size * 2);
   if (idx >= vec_items(v))
     vec_items(v) = idx + 1;
   return (void *)((uint8_t *)v->array + idx * vec_itemsize(v));
