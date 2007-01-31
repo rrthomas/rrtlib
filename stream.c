@@ -52,10 +52,12 @@ getln(FILE *fp)
 
   for (c = getc(fp); c != '\n' && c != EOF; c = getc(fp)) {
     if (s == l + len)
-      exc_realloc(l, len *= 2);
+      l = exc_realloc(l, len *= 2);
     *s++ = c;
   }
-  *s = '\0';
+  if (s == l + len)
+    l = exc_realloc(l, len + 1);
+  *s++ = '\0';
 
-  return l;
+  return exc_realloc(l, s - l);
 }
