@@ -3,8 +3,9 @@
 # TODO: Use a more sensible build system that deals with dependencies
 # properly; provide a trivial build script for people who don't have it.
 
-LIBDIR = $(HOME)/lib
-INCDIR = $(HOME)/include/rrt
+# FIXME: test arch for LIBDIR
+LIBDIR = $(HOME)/local/i686/lib
+INCDIR = $(HOME)/local/include/rrt
 
 CFLAGS = -g -pedantic -fPIC -Wall -W
 LDFLAGS = -L. -lRRT -fPIC
@@ -14,12 +15,12 @@ LDFLAGS = -L. -lRRT -fPIC
 
 lib = libRRT.so
 zip = rrtlib.zip
-libs = except memory string stream list hash buffer vector
+libs = except memory string stream list buffer vector # hash
 srcs = $(addsuffix .c, $(libs))
 hdrs = $(addsuffix .h, $(libs))
 objs = $(addsuffix .o, $(libs))
 docs = $(addsuffix .html, $(libs))
-tests = list_test hash_test buffer_test vector_test # $(addsuffix _test, $(libs))
+tests = list_test buffer_test vector_test # hash_test $(addsuffix _test, $(libs))
 
 
 # How to make the libraries
