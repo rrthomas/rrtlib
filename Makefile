@@ -19,15 +19,12 @@ libs = except memory string stream buffer vector
 srcs = $(addsuffix .c, $(libs))
 hdrs = $(addsuffix .h, $(libs))
 objs = $(addsuffix .o, $(libs))
-docs = $(addsuffix .html, $(libs))
 tests = buffer_test vector_test # $(addsuffix _test, $(libs))
 
 
 # How to make the libraries
 
-lib: $(lib)
-
-#doc: $(docs)
+all: $(lib) check
 
 $(lib): $(objs) $(hdrs)
 	$(CC) -shared -o $@ $(objs)
@@ -47,7 +44,7 @@ clean:
 	rm -f $(objs) $(tests)
 
 veryclean: clean
-	rm -f $(lib) $(docs) $(zip)
+	rm -f $(lib) $(zip)
 
 distclean: veryclean
 
