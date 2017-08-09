@@ -34,9 +34,9 @@ $(lib): $(objs) $(hdrs)
 
 $(tests): $(lib)
 
-test: $(tests)
+check: $(tests)
 	@for i in $^; do \
-		LD_LIBRARY_PATH=.:$(LD_LIBRARY_PATH) $$i; \
+		LD_LIBRARY_PATH=.:$(LD_LIBRARY_PATH) ./$$i; \
 	done
 
 install: test $(lib)
