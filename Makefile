@@ -15,12 +15,12 @@ LDFLAGS = -L. -lRRT -fPIC
 
 lib = libRRT.so
 zip = rrtlib.zip
-libs = except memory string stream list buffer vector
+libs = except memory string stream buffer vector
 srcs = $(addsuffix .c, $(libs))
 hdrs = $(addsuffix .h, $(libs))
 objs = $(addsuffix .o, $(libs))
 docs = $(addsuffix .html, $(libs))
-tests = list_test buffer_test vector_test # $(addsuffix _test, $(libs))
+tests = buffer_test vector_test # $(addsuffix _test, $(libs))
 
 
 # How to make the libraries

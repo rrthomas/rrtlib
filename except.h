@@ -6,14 +6,17 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <setjmp.h>
-#include "list.h"
 
 void exc_init(void);
 void vthrow(const char *fmt, va_list arg);
 void throw(const char *fmt, ...);
 
 jmp_buf *_try(void);
-extern List *_excBufs;
+typedef struct ExcList {
+  jmp_buf *env;
+  struct ExcList *next;
+} ExcList;
+extern ExcList *_excBufs;
 
 /* An exception handler has the form:
 
