@@ -5,8 +5,8 @@
 
 #include <stdio.h>
 
+/* Find the length of the given stream, which must be seekable;
+   returns -1 if there is an error */
 long flen(FILE *fp);
-long slurp(const char *file, const char *mode, long size, char *buf);
-char *getln(FILE *fp);
 
 #endif
