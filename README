@@ -1,7 +1,7 @@
 The RRTLib C library
-release 1
+release 2
 
-(c) Reuben Thomas 1996-2004
+© Reuben Thomas 1996–2017
 
 
 Introduction
@@ -21,8 +21,6 @@ no warranty.
 
 Auto-extending buffers
 Exceptions
-Lists
-Hash tables
-String utilities
+Binary-search utilities
 Stream utilities
 Memory utilities
