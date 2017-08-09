@@ -1,0 +1,4 @@
+*.o
+*.so
+buffer_test
+vector_test
