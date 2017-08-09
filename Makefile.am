@@ -11,7 +11,7 @@ librrt_includedir = $(includedir)/rrt
 librrt_include_HEADERS = \
 	except.h \
 	memory.h \
-	string.h \
+	bsearch.h \
 	stream.h \
 	buffer.h \
 	vector.h
@@ -19,7 +19,7 @@ librrt_include_HEADERS = \
 librrt_la_SOURCES = \
 	except.c \
 	memory.c \
-	string.c \
+	bsearch.c \
 	stream.c \
 	buffer.c \
 	vector.c \
